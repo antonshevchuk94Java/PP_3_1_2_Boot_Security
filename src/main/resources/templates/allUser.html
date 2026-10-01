@@ -3,9 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <title>Админ-панель</title>
+    <style>
+        body {
+            background-color: white;
+            color: black;
+        }
+        button, input {
+            background-color: white;
+            color: black;
+        }
+    </style>
 </head>
 <body>
 <h1>Пользователи</h1>
+
+<p th:if="${error}" th:text="${error}" style="color:red"></p>
 
 <form th:action="@{/logout}" method="post">
     <button type="submit">Выйти</button>

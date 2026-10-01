@@ -18,5 +18,7 @@ public interface UserDao {
 
     User findByLogin(String userLogin); // Find
 
+    User findById(long id);
+
 
 }

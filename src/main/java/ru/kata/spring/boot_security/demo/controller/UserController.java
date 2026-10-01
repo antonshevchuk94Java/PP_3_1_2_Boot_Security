@@ -7,7 +7,10 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import ru.kata.spring.boot_security.demo.dao.RoleDao;
+import ru.kata.spring.boot_security.demo.exception.DuplicateLoginException;
+import ru.kata.spring.boot_security.demo.exception.UserDeleteException;
 import ru.kata.spring.boot_security.demo.model.Role;
 import ru.kata.spring.boot_security.demo.model.User;
 import ru.kata.spring.boot_security.demo.service.UserService;
@@ -41,9 +44,14 @@ public class UserController {
                            @RequestParam("age") byte age,
                            @RequestParam("login") String login,
                            @RequestParam("password") String password,
-                           @RequestParam(value = "roles", required = false) List<String> roles) {
+                           @RequestParam(value = "roles", required = false) List<String> roles,
+                           RedirectAttributes redirectAttributes) {
         User newUser = new User(0, firstName, lastName, age, login, password, findRoles(roles));
-        userService.saveUser(newUser);
+        try {
+            userService.saveUser(newUser);
+        } catch (DuplicateLoginException e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+        }
         return "redirect:/admin";
     }
 
@@ -52,11 +60,15 @@ public class UserController {
                              @RequestParam("firstName") String firstName,
                              @RequestParam("lastName") String lastName,
                              @RequestParam("age") byte age,
-                             @RequestParam("login") String login,
                              @RequestParam("password") String password,
-                             @RequestParam(value = "roles", required = false) List<String> roles) {
-        User mergeUser = new User(id, firstName, lastName, age, login, password, findRoles(roles));
-        userService.updateUser(mergeUser);
+                             @RequestParam(value = "roles", required = false) List<String> roles,
+                             RedirectAttributes redirectAttributes) {
+        User mergeUser = new User(id, firstName, lastName, age, password, findRoles(roles));
+        try {
+            userService.updateUser(mergeUser);
+        } catch (UserDeleteException e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+        }
         return "redirect:/admin";
     }
 

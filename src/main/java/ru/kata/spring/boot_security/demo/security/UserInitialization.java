@@ -1,6 +1,5 @@
 package ru.kata.spring.boot_security.demo.security;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 import ru.kata.spring.boot_security.demo.dao.RoleDao;
@@ -15,10 +14,10 @@ import java.util.Set;
 
 @Component
 public class UserInitialization implements CommandLineRunner {
-    private UserService userService;
-    private RoleDao roleDao;
+    private final UserService userService;
+    private final RoleDao roleDao;
 
-    @Autowired
+
     public UserInitialization(UserServiceImpl userService, RoleDaoImpl roleDao) {
         this.userService = userService;
         this.roleDao = roleDao;

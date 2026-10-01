@@ -7,8 +7,6 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import ru.kata.spring.boot_security.demo.model.User;
 
-import javax.persistence.NoResultException;
-
 @Service
 public class UserDetailsServiceImpl implements UserDetailsService {
     private final UserService userService;
@@ -20,10 +18,11 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException  {
-       try { User user = userService.findByLogin(username);
+        User user = userService.findByLogin(username);
+        if (user == null){
+            throw new UsernameNotFoundException("User с таким login не найден");
+        }
            return user;
-       } catch (NoResultException e) {
-           throw new UsernameNotFoundException("User с таким login не найден");
-       }
+
     }
 }

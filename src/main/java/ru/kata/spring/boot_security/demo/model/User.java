@@ -20,7 +20,7 @@ public class User implements UserDetails {
     private String lastName;
     @Column (name = "age")
     private byte age;
-    @Column (name = "userLogin")
+    @Column (name = "userLogin",unique = true)
     private String login;
     @Column (name = "userPassword")
     private String password;
@@ -34,18 +34,6 @@ public class User implements UserDetails {
     public User() {
     }
 
-    public User(String firstName, String lastName, byte age) {
-        this.firstName = firstName;
-        this.lastName = lastName;
-        this.age = age;
-    }
-
-    public User(long id, String firstName, String lastName, byte age) {
-        this.id = id;
-        this.firstName = firstName;
-        this.lastName = lastName;
-        this.age = age;
-    }
 
     public User(long id, String firstName, String lastName, byte age, String login,
                 String password, Set<Role> roleSet) {
@@ -56,6 +44,14 @@ public class User implements UserDetails {
         this.login = login;
         this.password = password;
         this.roleSet = roleSet;
+    }
+
+    public User(long id, String firstName, String lastName, byte age, String password, Set<Role> roles) {
+        this.id = id;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.age = age;
+        this.password = password;
     }
 
     public long getId() {
