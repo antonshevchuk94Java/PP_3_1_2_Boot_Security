@@ -44,7 +44,7 @@
         <input name="firstName" th:value="${user.firstName}" placeholder="Имя" required>
         <input name="lastName" th:value="${user.lastName}" placeholder="Фамилия" required>
         <input name="age" type="number" th:value="${user.age}" required>
-        <input name="login" th:value="${user.login}" placeholder="Логин" required>
+        <input name="login" th:value="${user.login}" placeholder="Логин" readonly>
         <input name="password" type="password" placeholder="Новый пароль" required>
         <label th:each="role : ${allRoles}">
             <input type="checkbox" name="roles" th:value="${role.role}"
