@@ -27,12 +27,11 @@ public class UserServiceImpl implements UserService {
     @Override
     public void saveUser(User user) {
         if (userDao.findByLogin(user.getLogin()) != null) {
-            throw new DuplicateLoginException ("Этот login занят");
+            throw new DuplicateLoginException("Этот login занят");
         }
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         userDao.saveUser(user);
     }
-
 
 
     @Override
@@ -44,7 +43,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public void updateUser(User user) {
         User oldUser = userDao.findById(user.getId());
-        if (oldUser == null){
+        if (oldUser == null) {
             throw new UserDeleteException("Пользователь был удален!");
         }
         user.setLogin(oldUser.getLogin());

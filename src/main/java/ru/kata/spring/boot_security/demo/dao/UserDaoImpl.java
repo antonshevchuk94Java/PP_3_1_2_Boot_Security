@@ -1,7 +1,6 @@
 package ru.kata.spring.boot_security.demo.dao;
 
 
-
 import org.springframework.stereotype.Repository;
 import ru.kata.spring.boot_security.demo.model.User;
 import javax.persistence.EntityManager;
@@ -40,13 +39,14 @@ public class UserDaoImpl implements UserDao {
 
     @Override
     public User findByLogin(String userLogin) {
-       try { return entityManager.createQuery
-                       ("select u from User u where u.login = :login", User.class)
-               .setParameter("login",userLogin)
-               .getSingleResult();
-       } catch (NoResultException e) {
-           return null;
-       }
+        try {
+            return entityManager.createQuery
+                            ("select u from User u where u.login = :login", User.class)
+                    .setParameter("login", userLogin)
+                    .getSingleResult();
+        } catch (NoResultException e) {
+            return null;
+        }
 
     }
 

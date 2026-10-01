@@ -14,20 +14,20 @@ public class User implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private long id;
-    @Column (name = "firstName")
+    @Column(name = "firstName")
     private String firstName;
-    @Column (name = "lastName")
+    @Column(name = "lastName")
     private String lastName;
-    @Column (name = "age")
+    @Column(name = "age")
     private byte age;
-    @Column (name = "userLogin",unique = true)
+    @Column(name = "userLogin", unique = true)
     private String login;
-    @Column (name = "userPassword")
+    @Column(name = "userPassword")
     private String password;
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "user_roles", // имя для промежуточной таблицы
-    joinColumns = @JoinColumn(name = "user_id"), // ссылка на столбец в user
-    inverseJoinColumns = @JoinColumn(name = "role_id") // сылка на столбец в role
+            joinColumns = @JoinColumn(name = "user_id"), // ссылка на столбец в user
+            inverseJoinColumns = @JoinColumn(name = "role_id") // сылка на столбец в role
     )
     private Set<Role> roleSet = new HashSet<>(); // set куда положим связаные ID
 
@@ -87,9 +87,13 @@ public class User implements UserDetails {
         this.age = age;
     }
 
-    public String getLogin() { return login; }
+    public String getLogin() {
+        return login;
+    }
 
-    public void setLogin(String login) { this.login = login; }
+    public void setLogin(String login) {
+        this.login = login;
+    }
 
     public Set<Role> getRoleSet() {
         return roleSet;
@@ -99,7 +103,9 @@ public class User implements UserDetails {
         this.roleSet = roleSet;
     }
 
-    public void setPassword(String password) { this.password = password; }
+    public void setPassword(String password) {
+        this.password = password;
+    }
 
     @Override
     public String toString() {

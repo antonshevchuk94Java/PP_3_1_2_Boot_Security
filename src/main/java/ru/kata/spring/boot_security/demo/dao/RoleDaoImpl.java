@@ -5,6 +5,7 @@ import ru.kata.spring.boot_security.demo.model.Role;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import java.util.List;
+
 import org.springframework.transaction.annotation.Transactional;
 
 @Repository
@@ -20,7 +21,7 @@ public class RoleDaoImpl implements RoleDao {
 
     @Override
     public List<Role> getAllRoles() {
-        return  entityManager.createQuery("select r FROM Role r", Role.class).getResultList();
+        return entityManager.createQuery("select r FROM Role r", Role.class).getResultList();
     }
 
 

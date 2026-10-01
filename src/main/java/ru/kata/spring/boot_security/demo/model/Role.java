@@ -8,7 +8,7 @@ import java.util.Set;
 
 
 @Entity
-@Table (name = "role")
+@Table(name = "role")
 public class Role implements GrantedAuthority {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -18,10 +18,10 @@ public class Role implements GrantedAuthority {
     @ManyToMany(mappedBy = "roleSet")
     private Set<User> userSet = new HashSet<>();
 
-    public Role(){
+    public Role() {
     }
 
-    public Role(String role){
+    public Role(String role) {
         this.role = role;
     }
 
