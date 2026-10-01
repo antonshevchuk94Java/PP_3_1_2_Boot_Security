@@ -13,4 +13,4 @@ public class CommonUserController {
         model.addAttribute("user",user);
         return "user";
     }
-}
+} 
