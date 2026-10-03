@@ -6,13 +6,15 @@ import org.springframework.security.core.userdetails.UserDetails;
 import javax.persistence.*;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 
 @Entity
 @Table(name = "Users")
 public class User implements UserDetails {
+    private static final long serialVersionUID = 1L;
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
     @Column(name = "firstName")
     private String firstName;
@@ -24,7 +26,7 @@ public class User implements UserDetails {
     private String login;
     @Column(name = "userPassword")
     private String password;
-    @ManyToMany(fetch = FetchType.EAGER)
+    @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(name = "user_roles", // имя для промежуточной таблицы
             joinColumns = @JoinColumn(name = "user_id"), // ссылка на столбец в user
             inverseJoinColumns = @JoinColumn(name = "role_id") // сылка на столбец в role
@@ -34,25 +36,6 @@ public class User implements UserDetails {
     public User() {
     }
 
-
-    public User(long id, String firstName, String lastName, byte age, String login,
-                String password, Set<Role> roleSet) {
-        this.id = id;
-        this.firstName = firstName;
-        this.lastName = lastName;
-        this.age = age;
-        this.login = login;
-        this.password = password;
-        this.roleSet = roleSet;
-    }
-
-    public User(long id, String firstName, String lastName, byte age, String password, Set<Role> roles) {
-        this.id = id;
-        this.firstName = firstName;
-        this.lastName = lastName;
-        this.age = age;
-        this.password = password;
-    }
 
     public long getId() {
         return id;
@@ -105,6 +88,19 @@ public class User implements UserDetails {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        User user = (User) o;
+        return  Objects.equals(login, user.login);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(login);
     }
 
     @Override

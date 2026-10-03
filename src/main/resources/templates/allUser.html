@@ -29,7 +29,7 @@
     <input name="lastName" placeholder="Фамилия" required>
     <input name="age" type="number" placeholder="Возраст" required>
     <input name="login" placeholder="Логин" required>
-    <input name="password" type="password" placeholder="Пароль" required>
+    <input name="password" type="password" placeholder="Пароль">
     <label th:each="role : ${allRoles}">
         <input type="checkbox" name="roles" th:value="${role.role}">
         <span th:text="${role.role}"></span>
@@ -45,7 +45,7 @@
         <input name="lastName" th:value="${user.lastName}" placeholder="Фамилия" required>
         <input name="age" type="number" th:value="${user.age}" required>
         <input name="login" th:value="${user.login}" placeholder="Логин" readonly>
-        <input name="password" type="password" placeholder="Новый пароль" required>
+        <input name="password" type="password" placeholder="Новый пароль">
         <label th:each="role : ${allRoles}">
             <input type="checkbox" name="roles" th:value="${role.role}"
                    th:checked="${#lists.contains(user.authorities.![authority], role.role)}">

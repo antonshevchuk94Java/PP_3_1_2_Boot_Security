@@ -41,7 +41,7 @@ public class UserDaoImpl implements UserDao {
     public User findByLogin(String userLogin) {
         try {
             return entityManager.createQuery
-                            ("select u from User u where u.login = :login", User.class)
+                            ("select u from User u left join fetch u.roleSet where u.login = :login", User.class)
                     .setParameter("login", userLogin)
                     .getSingleResult();
         } catch (NoResultException e) {

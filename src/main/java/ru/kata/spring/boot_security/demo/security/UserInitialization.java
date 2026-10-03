@@ -3,14 +3,13 @@ package ru.kata.spring.boot_security.demo.security;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 import ru.kata.spring.boot_security.demo.dao.RoleDao;
-import ru.kata.spring.boot_security.demo.dao.RoleDaoImpl;
 import ru.kata.spring.boot_security.demo.model.Role;
 import ru.kata.spring.boot_security.demo.model.User;
 import ru.kata.spring.boot_security.demo.service.UserService;
-import ru.kata.spring.boot_security.demo.service.UserServiceImpl;
 
-import java.util.HashSet;
-import java.util.Set;
+
+import java.util.List;
+
 
 @Component
 public class UserInitialization implements CommandLineRunner {
@@ -18,7 +17,7 @@ public class UserInitialization implements CommandLineRunner {
     private final RoleDao roleDao;
 
 
-    public UserInitialization(UserServiceImpl userService, RoleDaoImpl roleDao) {
+    public UserInitialization(UserService userService, RoleDao roleDao) {
         this.userService = userService;
         this.roleDao = roleDao;
     }
@@ -37,13 +36,11 @@ public class UserInitialization implements CommandLineRunner {
         User admin = new User();
         admin.setLogin("admin");
         admin.setPassword("admin");
-        admin.setRoleSet(new HashSet<>(Set.of(adminRole, userRole)));
-        userService.saveUser(admin);
+        userService.saveUser(admin, List.of("ROLE_ADMIN", "ROLE_USER"));
 
         User user = new User();
         user.setLogin("user");
         user.setPassword("user");
-        user.setRoleSet(new HashSet<>(Set.of(userRole)));
-        userService.saveUser(user);
+        userService.saveUser(user, List.of("ROLE_USER"));
     }
 }
