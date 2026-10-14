@@ -2,13 +2,20 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="https://www.thymeleaf.org"
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
+    <!-- CSRF-токен и имя заголовка. Thymeleaf подставляет их при отрисовке страницы,
+         JS потом читает их отсюда и добавляет в POST/PUT/DELETE-запросы -->
+    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+    <meta name="_csrf" th:content="${_csrf.token}"/>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Админ панель</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
-<p th:if="${error}" th:text="${error}" style="color:red"></p>
+
+<!-- ============ ВЕРХНЯЯ ПАНЕЛЬ ============
+     Логин и роли вошедшего пользователя рисует Thymeleaf (один раз, при загрузке страницы).
+     Выход - обычная форма POST: перезагрузка при выходе нормальна, мы же уходим на страницу логина -->
 <nav class="navbar navbar-dark bg-dark px-3">
     <span class="navbar-text text-white">
         <strong sec:authentication="name">login</strong>
@@ -21,206 +28,577 @@
     </form>
 </nav>
 
-
 <div class="container-fluid">
     <div class="row" style="min-height: calc(100vh - 56px)">
+
+        <!-- ============ БОКОВОЕ МЕНЮ ============
+             href="#" - остаёмся на странице. Переключение панелей делает JS (функция showPanel) -->
         <div class="col-md-2 p-0 bg-white">
             <div class="nav flex-column nav-pills pt-3 px-2">
-                <a class="nav-link active" th:href="@{/admin}">Admin</a>
-                <a class="nav-link" th:href="@{/user}">User</a>
+                <a class="nav-link active" href="#" id="adminLink">Admin</a>
+                <a class="nav-link" href="#" id="userLink">User</a>
             </div>
         </div>
+
         <div class="col-md-10 bg-light p-4">
-            <h1>Admin панель</h1>
-            <ul class="nav nav-tabs">
-                <li class="nav-item">
-                    <button class="nav-link active" type="button" data-bs-toggle="tab" data-bs-target="#users-table">
-                        Список пользователей
-                    </button>
-                </li>
-                <li class="nav-item">
-                    <button class="nav-link" type="button" data-bs-toggle="tab" data-bs-target="#new-user">Добавить
-                        пользователя
-                    </button>
-                </li>
-            </ul>
-            <div class="tab-content">
-                <div class="tab-pane fade show active" id="users-table">
-                    <h3>Все пользователи</h3>
-                    <table class="table table-striped">
-                        <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Имя</th>
-                            <th>Фамилия</th>
-                            <th>Возраст</th>
-                            <th>Login</th>
-                            <th>Права доступа</th>
-                            <th>Редактировать</th>
-                            <th>Удалить</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        <tr th:each="user : ${allUsers}">
-                            <td th:text="${user.id}"></td>
-                            <td th:text="${user.firstName}"></td>
-                            <td th:text="${user.lastName}"></td>
-                            <td th:text="${user.age}"></td>
-                            <td th:text="${user.login}"></td>
-                            <td>
-                                <span th:each="role : ${user.authorities}"
-                                      th:text="${#strings.replace(role.authority, 'ROLE_', '')}" class="me-2"></span>
-                            </td>
-                            <td>
-                                <button type="button" class="btn btn-info"
-                                        data-bs-toggle="modal" th:data-bs-target="'#update' + ${user.id}">Редактировать
-                                </button>
 
-                                <div class="modal fade" th:id="'update' + ${user.id}" tabindex="-1">
-                                    <div class="modal-dialog">
-                                        <div class="modal-content">
-                                            <div class="modal-header">
-                                                <h5 class="modal-title">Изменить данные?</h5>
-                                                <button type="button" class="btn-close"
-                                                        data-bs-dismiss="modal"></button>
-                                            </div>
-                                            <form th:action="@{/admin/update}" method="post">
-                                                <div class="modal-body">
-                                                    <div class="mb-3">
-                                                        <label class="form-label">ID</label>
-                                                        <input type="text" class="form-control" th:value="${user.id}"
-                                                               name="id" readonly>
-                                                    </div>
-                                                    <div class="mb-3">
-                                                        <label class="form-label">Имя</label>
-                                                        <input type="text" class="form-control"
-                                                               th:value="${user.firstName}" name="firstName">
-                                                    </div>
-                                                    <div class="mb-3">
-                                                        <label class="form-label">Фамилия</label>
-                                                        <input type="text" class="form-control"
-                                                               th:value="${user.lastName}" name="lastName">
-                                                    </div>
-                                                    <div class="mb-3">
-                                                        <label class="form-label">Возраст</label>
-                                                        <input type="number" class="form-control" th:value="${user.age}"
-                                                               name="age">
-                                                    </div>
-                                                    <div class="mb-3">
-                                                        <label class="form-label">Login</label>
-                                                        <input type="text" class="form-control" th:value="${user.login}"
-                                                               name="login" readonly>
-                                                    </div>
-                                                    <div class="mb-3">
-                                                        <label class="form-label">Новый пароль</label>
-                                                        <input type="password" class="form-control" name="password">
-                                                    </div>
-                                                    <div class="mb-3">
-                                                        <label th:each="role : ${allRoles}" class="form-check">
-                                                            <input type="checkbox" name="roles" th:value="${role.role}"
-                                                                   th:checked="${#lists.contains(user.authorities.![authority], role.role)}"
-                                                                   class="form-check-input">
-                                                            <span th:text="${role.role}"
-                                                                  class="form-check-label"></span>
-                                                        </label>
-                                                    </div>
-                                                </div>
-                                                <div class="modal-footer">
-                                                    <button type="button" class="btn btn-secondary"
-                                                            data-bs-dismiss="modal">Отмена
-                                                    </button>
-                                                    <button type="submit" class="btn btn-primary">Изменить</button>
-                                                </div>
-                                            </form>
-                                        </div>
-                                    </div>
-                                </div>
-                            </td>
-                            <td>
-                                <button type="button" class="btn btn-danger"
-                                        data-bs-toggle="modal" th:data-bs-target="'#delete' + ${user.id}">Удалить
-                                </button>
+            <!-- ============ ПАНЕЛЬ ADMIN ============ -->
+            <div id="adminPanel">
+                <h1>Admin панель</h1>
 
-                                <div class="modal fade" th:id="'delete' + ${user.id}" tabindex="-1">
-                                    <div class="modal-dialog">
-                                        <div class="modal-content">
-                                            <div class="modal-header">
-                                                <h5 class="modal-title">Удалить пользователя?</h5>
-                                                <button type="button" class="btn-close"
-                                                        data-bs-dismiss="modal"></button>
-                                            </div>
-                                            <div class="modal-body">
-                                                <div class="mb-3">
-                                                    <label class="form-label">ID</label>
-                                                    <input type="text" class="form-control" th:value="${user.id}"
-                                                           readonly>
-                                                </div>
-                                                <div class="mb-3">
-                                                    <label class="form-label">Имя</label>
-                                                    <input type="text" class="form-control" th:value="${user.firstName}"
-                                                           readonly>
-                                                </div>
-                                                <div class="mb-3">
-                                                    <label class="form-label">Фамилия</label>
-                                                    <input type="text" class="form-control" th:value="${user.lastName}"
-                                                           readonly>
-                                                </div>
-                                                <div class="mb-3">
-                                                    <label class="form-label">Возраст</label>
-                                                    <input type="number" class="form-control" th:value="${user.age}"
-                                                           readonly>
-                                                </div>
-                                                <div class="mb-3">
-                                                    <label class="form-label">Login</label>
-                                                    <input type="text" class="form-control" th:value="${user.login}"
-                                                           readonly>
-                                                </div>
-                                                <div class="mb-3">
-                                                    <label class="form-label">Право доступа</label>
-                                                    <div class="form-control bg-body-secondary">
-                                                        <span th:each="role : ${user.authorities}"
-                                                              th:text="${#strings.replace(role.authority, 'ROLE_', '')}"
-                                                              class="me-2"></span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div class="modal-footer">
-                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                                                    Отмена
-                                                </button>
-                                                <form th:action="@{/admin/delete}" method="post">
-                                                    <input type="hidden" name="id" th:value="${user.id}">
-                                                    <button type="submit" class="btn btn-danger">Удалить</button>
-                                                </form>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </td>
-                        </tr>
-                        </tbody>
-                    </table>
+                <!-- Вкладки: список / добавление. Переключает сам Bootstrap через data-bs-toggle="tab" -->
+                <ul class="nav nav-tabs">
+                    <li class="nav-item">
+                        <button class="nav-link active" type="button" data-bs-toggle="tab"
+                                data-bs-target="#users-table">
+                            Список пользователей
+                        </button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link" type="button" data-bs-toggle="tab" data-bs-target="#new-user">
+                            Добавить пользователя
+                        </button>
+                    </li>
+                </ul>
+
+                <div class="tab-content">
+
+                    <!-- Вкладка 1: таблица. Тело таблицы пустое, строки в него вставляет JS (loadUsers) -->
+                    <div class="tab-pane fade show active" id="users-table">
+                        <h3>Все пользователи</h3>
+                        <table class="table table-striped">
+                            <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Имя</th>
+                                <th>Фамилия</th>
+                                <th>Возраст</th>
+                                <th>Login</th>
+                                <th>Права доступа</th>
+                                <th>Редактировать</th>
+                                <th>Удалить</th>
+                            </tr>
+                            </thead>
+                            <tbody id="usersTableBody"></tbody>
+                        </table>
+                    </div>
+
+                    <!-- Вкладка 2: форма добавления. У формы нет action/method:
+                         отправку перехватывает JS (addUser), страница не перезагружается.
+                         Чекбоксы ролей тоже рисует JS (loadAddRoles) в контейнер addRoles -->
+                    <div class="tab-pane fade" id="new-user">
+                        <h2>Добавить пользователя</h2>
+                        <form id="addUserForm">
+                            <input name="firstName" placeholder="Имя" required class="form-control">
+                            <input name="lastName" placeholder="Фамилия" required class="form-control">
+                            <input name="age" type="number" placeholder="Возраст" required class="form-control">
+                            <input name="login" placeholder="Логин" required class="form-control">
+                            <input name="password" type="password" placeholder="Пароль" required
+                                   class="form-control">
+                            <div id="addRoles"></div>
+                            <button type="submit" class="btn btn-success">Добавить пользователя</button>
+                        </form>
+                    </div>
                 </div>
-                <div class="tab-pane fade" id="new-user">
-                    <h2>Добавить пользователя</h2>
-                    <form th:action="@{/admin/save}" method="post">
-                        <input name="firstName" placeholder="Имя" required class="form-control">
-                        <input name="lastName" placeholder="Фамилия" required class="form-control">
-                        <input name="age" type="number" placeholder="Возраст" required class="form-control">
-                        <input name="login" placeholder="Логин" required class="form-control">
-                        <input name="password" type="password" placeholder="Пароль" class="form-control">
-                        <label th:each="role : ${allRoles}" class="form-check">
-                            <input type="checkbox" name="roles" th:value="${role.role}" class="form-check-input">
-                            <span th:text="${role.role}" class="form-check-label"></span>
-                        </label>
-                        <button type="submit" class="btn btn-success">Добавить пользователя</button>
-                    </form>
+            </div>
+
+            <!-- ============ ПАНЕЛЬ USER ============
+                 Скрыта классом d-none. Данные текущего пользователя JS берёт из /api/user (loadCurrentUser) -->
+            <div id="userPanel" class="d-none">
+                <h1>User information-page</h1>
+                <h3>About user</h3>
+                <table class="table table-striped">
+                    <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Имя</th>
+                        <th>Фамилия</th>
+                        <th>Возраст</th>
+                        <th>Login</th>
+                        <th>Права доступа</th>
+                    </tr>
+                    </thead>
+                    <tbody id="currentUserBody"></tbody>
+                </table>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- ============ МОДАЛКА УДАЛЕНИЯ ============
+     Одна на всю страницу, лежит ВНЕ таблицы. Поля пустые и readonly,
+     JS заполняет их данными выбранного пользователя (openDeleteModal) -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Удалить пользователя?</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label">ID</label>
+                    <input type="text" class="form-control" id="deleteId" readonly>
                 </div>
+                <div class="mb-3">
+                    <label class="form-label">Имя</label>
+                    <input type="text" class="form-control" id="deleteFirstName" readonly>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Фамилия</label>
+                    <input type="text" class="form-control" id="deleteLastName" readonly>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Возраст</label>
+                    <input type="number" class="form-control" id="deleteAge" readonly>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Login</label>
+                    <input type="text" class="form-control" id="deleteLogin" readonly>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Права доступа</label>
+                    <input type="text" class="form-control" id="deleteRoles" readonly>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                <button type="button" class="btn btn-danger" id="confirmDeleteBtn">Удалить</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ============ МОДАЛКА РЕДАКТИРОВАНИЯ ============
+     Тоже одна общая. id и login менять нельзя (readonly).
+     Контейнер editRoles JS заполняет чекбоксами ролей (openEditModal) -->
+<div class="modal fade" id="editModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Изменить данные?</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label">ID</label>
+                    <input type="text" class="form-control" id="editId" readonly>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Имя</label>
+                    <input type="text" class="form-control" id="editFirstName">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Фамилия</label>
+                    <input type="text" class="form-control" id="editLastName">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Возраст</label>
+                    <input type="number" class="form-control" id="editAge">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Login</label>
+                    <input type="text" class="form-control" id="editLogin" readonly>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Новый пароль</label>
+                    <input type="password" class="form-control" id="editPassword">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Права доступа</label>
+                    <div id="editRoles"></div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                <button type="button" class="btn btn-primary" id="saveEditBtn">Изменить</button>
             </div>
         </div>
     </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    /* =====================================================================
+       1. КОНСТАНТЫ
+       ===================================================================== */
+
+    // CSRF: сервер требует токен во всех запросах, которые меняют данные (POST/PUT/DELETE).
+    // Токен и имя заголовка лежат в <meta> в <head>, читаем их оттуда.
+    const csrfToken = document.querySelector('meta[name="_csrf"]').content;
+    const csrfHeader = document.querySelector('meta[name="_csrf_header"]').content;
+
+    // Модалки: берём HTML-элемент и отдаём его Bootstrap - он возвращает объект с методами show()/hide().
+    const deleteModalElement = document.getElementById("deleteModal");
+    const deleteModal = new bootstrap.Modal(deleteModalElement);
+    const editModalElement = document.getElementById("editModal");
+    const editModal = new bootstrap.Modal(editModalElement);
+
+    /* =====================================================================
+       2. ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ
+       ===================================================================== */
+
+    // ЧТО: экранирует спецсимволы HTML.
+    // ЗАЧЕМ: мы вставляем данные в страницу через innerHTML. Если в имени пользователя будет
+    //        вредоносный HTML-код (например, тег скрипта), браузер его выполнит (XSS-атака).
+    //        После экранирования "<" превращается в "&lt;" и показывается как обычный текст.
+    // КАК: заменяем 5 опасных символов на их безопасные коды. null/undefined превращаем в пустую строку.
+    function escapeHtml(value) {
+        return String(value ?? '')
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    }
+
+    // ЧТО: собирает роли пользователя в одну строку, например "USER ADMIN".
+    // КАК: map превращает каждую роль в её название без префикса ROLE_, join склеивает через разделитель.
+    function getRolesText(user, separator = ' ') {
+        return user.roleSet
+            .map(roleObj => roleObj.role.replace('ROLE_', ''))
+            .join(separator);
+    }
+
+    // ЧТО: рисует чекбоксы ролей внутри контейнера (используется в форме добавления и в модалке изменения).
+    // ПАРАМЕТРЫ: allRoles - все роли с сервера; checkboxName - общее имя чекбоксов (по нему их потом найдём);
+    //            selectedRoleNames - названия ролей, у которых надо сразу поставить галочку.
+    function renderRoleCheckboxes(container, allRoles, checkboxName, selectedRoleNames = []) {
+        let rolesHtml = '';
+        for (const roleObj of allRoles) {
+            const checked = selectedRoleNames.includes(roleObj.role) ? 'checked' : '';
+            rolesHtml += `
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" name="${checkboxName}"
+                           value="${escapeHtml(roleObj.role)}" ${checked}>
+                    <label class="form-check-label">${escapeHtml(roleObj.role)}</label>
+                </div>`;
+        }
+        container.innerHTML = rolesHtml;
+    }
+
+    // ЧТО: возвращает отмеченные галочки как массив объектов [{role: "ROLE_ADMIN"}, ...].
+    // ЗАЧЕМ: именно в таком виде сервер ждёт поле roleSet в JSON (Spring соберёт из них объекты Role).
+    function getCheckedRoles(checkboxName) {
+        const checkedBoxes = document.querySelectorAll(`input[name="${checkboxName}"]:checked`);
+        return Array.from(checkedBoxes).map(checkbox => ({role: checkbox.value}));
+    }
+
+    /* =====================================================================
+       3. ТАБЛИЦА ПОЛЬЗОВАТЕЛЕЙ (GET /api/admin/users)
+       ===================================================================== */
+
+    // ЧТО: собирает HTML одной строки таблицы из объекта пользователя.
+    // КАК: шаблонная строка (обратные кавычки), ${...} подставляет значения.
+    //      Все текстовые поля пропускаем через escapeHtml. id - число, его экранировать не нужно.
+    //      Кнопки вызывают функции прямо из HTML через onclick, передавая id пользователя.
+    function createUserRow(user) {
+        return `
+            <tr>
+                <td>${user.id}</td>
+                <td>${escapeHtml(user.firstName ?? 'пусто')}</td>
+                <td>${escapeHtml(user.lastName ?? 'пусто')}</td>
+                <td>${user.age}</td>
+                <td>${escapeHtml(user.login)}</td>
+                <td>${escapeHtml(getRolesText(user))}</td>
+                <td>
+                    <button type="button" class="btn btn-info" onclick="openEditModal(${user.id})">Изменить</button>
+                </td>
+                <td>
+                    <button type="button" class="btn btn-danger" onclick="openDeleteModal(${user.id})">Удалить</button>
+                </td>
+            </tr>`;
+    }
+
+    // ЧТО: загружает всех пользователей и перерисовывает таблицу.
+    // КАК: fetch GET -> response.json() превращает ответ в массив объектов ->
+    //      map собирает по строке на каждого -> join склеивает в одну строку -> innerHTML вставляет в <tbody>.
+    //      try/catch нужен на случай, если сеть недоступна. response.ok = статус 200-299.
+    async function loadUsers() {
+        try {
+            const response = await fetch('/api/admin/users');
+            if (response.ok) {
+                const users = await response.json();
+                document.getElementById("usersTableBody").innerHTML =
+                    users.map(user => createUserRow(user)).join('');
+            } else {
+                console.error('Ошибка при загрузке списка пользователей: статус', response.status);
+            }
+        } catch (error) {
+            console.error('Ошибка сети:', error);
+        }
+    }
+
+    // ЧТО: получает с сервера одного пользователя по id (GET /api/admin/users/{id}).
+    // ВАЖНО: функция async, поэтому возвращает Promise. Снаружи её нужно вызывать с await,
+    //        иначе вместо пользователя получим обещание. При ошибке возвращает undefined.
+    async function findUserById(userId) {
+        try {
+            const response = await fetch(`/api/admin/users/${userId}`);
+            if (response.ok) {
+                return await response.json();
+            }
+            console.error('Ошибка при поиске пользователя: статус', response.status);
+        } catch (error) {
+            console.error('Ошибка сети:', error);
+        }
+    }
+
+    /* =====================================================================
+       4. УДАЛЕНИЕ (DELETE /api/admin/users/{id})
+       ===================================================================== */
+
+    // ЧТО: открывает модалку удаления с данными выбранного пользователя.
+    // КАК: получили пользователя (await!) -> вписали поля в input через .value -> deleteModal.show().
+    //      Присвоение .value безопасно для XSS, экранировать здесь не нужно.
+    async function openDeleteModal(userId) {
+        try {
+            const user = await findUserById(userId);
+            if (!user) {
+                return; // сервер не вернул пользователя - модалку не открываем
+            }
+            document.getElementById("deleteId").value = user.id;
+            document.getElementById("deleteFirstName").value = user.firstName;
+            document.getElementById("deleteLastName").value = user.lastName;
+            document.getElementById("deleteAge").value = user.age;
+            document.getElementById("deleteLogin").value = user.login;
+            document.getElementById("deleteRoles").value = getRolesText(user, ', ');
+            deleteModal.show();
+        } catch (error) {
+            console.error('Ошибка при открытии модалки удаления:', error);
+        }
+    }
+
+    // ЧТО: отправляет DELETE-запрос. Возвращает true, если сервер удалил пользователя.
+    // КАК: метод DELETE + CSRF-заголовок. Тела у запроса нет, id передан в адресе.
+    //      После успеха перезагружаем таблицу. Квадратные скобки [csrfHeader] - имя ключа берётся из переменной.
+    async function deleteUser(userId) {
+        try {
+            const response = await fetch(`/api/admin/users/${userId}`, {
+                method: 'DELETE',
+                headers: {[csrfHeader]: csrfToken}
+            });
+            if (response.ok) {
+                await loadUsers();
+                return true;
+            }
+            console.error('Ошибка при удалении: статус', response.status);
+        } catch (error) {
+            console.error('Ошибка сети:', error);
+        }
+        return false;
+    }
+
+    // ЧТО: обработчик кнопки "Удалить" внутри модалки.
+    // КАК: id пользователя лежит в поле deleteId (записали при открытии). Закрываем модалку
+    //      только если удаление прошло - иначе пользователь не узнает об ошибке.
+    async function confirmDelete() {
+        const userId = document.getElementById("deleteId").value;
+        const isDeleted = await deleteUser(userId);
+        if (isDeleted) {
+            deleteModal.hide();
+        }
+    }
+
+    /* =====================================================================
+       5. РЕДАКТИРОВАНИЕ (PUT)
+       ===================================================================== */
+
+    // ЧТО: загружает список всех ролей (GET /api/admin/users/roles).
+    // ЗАЧЕМ: чекбоксы ролей рисует JS, а список ролей знает только сервер.
+    // Ошибку не глотаем, а пробрасываем через throw - её поймает try/catch вызывающей функции.
+    async function loadAllRoles() {
+        const response = await fetch('/api/admin/users/roles');
+        if (!response.ok) {
+            throw new Error('Не удалось загрузить роли, статус: ' + response.status);
+        }
+        return await response.json();
+    }
+
+    // ЧТО: открывает модалку редактирования, заполняет поля и ставит галочки на ролях пользователя.
+    // КАК: берём пользователя и все роли -> собираем названия ролей пользователя в массив ->
+    //      рисуем чекбоксы, у ролей из этого массива включаем checked (метод includes).
+    //      Пароль оставляем пустым: пустое поле означает "пароль не менять".
+    async function openEditModal(userId) {
+        try {
+            const user = await findUserById(userId);
+            if (!user) {
+                return;
+            }
+            const allRoles = await loadAllRoles();
+            const userRoleNames = user.roleSet.map(roleObj => roleObj.role);
+
+            document.getElementById("editId").value = user.id;
+            document.getElementById("editFirstName").value = user.firstName;
+            document.getElementById("editLastName").value = user.lastName;
+            document.getElementById("editAge").value = user.age;
+            document.getElementById("editLogin").value = user.login;
+            document.getElementById("editPassword").value = '';
+            renderRoleCheckboxes(document.getElementById("editRoles"), allRoles, "editRole", userRoleNames);
+
+            editModal.show();
+        } catch (error) {
+            console.error('Ошибка при открытии модалки редактирования:', error);
+        }
+    }
+
+    // ЧТО: обработчик кнопки "Изменить" в модалке - отправляет изменения на сервер.
+    // КАК: собираем объект из полей модалки -> JSON.stringify превращает его в строку JSON ->
+    //      PUT с заголовком Content-Type (сервер понимает, что в теле JSON) и CSRF-заголовком.
+    //      Если сервер ответил успехом - закрываем модалку и обновляем таблицу.
+    // ВАЖНО: адрес должен совпадать с аннотацией @PutMapping в AdminRestController.
+    async function saveEditedUser() {
+        const user = {
+            id: document.getElementById("editId").value,
+            firstName: document.getElementById("editFirstName").value,
+            lastName: document.getElementById("editLastName").value,
+            age: document.getElementById("editAge").value,
+            login: document.getElementById("editLogin").value,
+            password: document.getElementById("editPassword").value,
+            roleSet: getCheckedRoles("editRole")
+        };
+        try {
+            const response = await fetch('/api/admin/users/update', {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    [csrfHeader]: csrfToken
+                },
+                body: JSON.stringify(user)
+            });
+            if (response.ok) {
+                editModal.hide();
+                await loadUsers();
+            } else {
+                console.error('Ошибка при обновлении: статус', response.status);
+            }
+        } catch (error) {
+            console.error('Ошибка сети:', error);
+        }
+    }
+
+    /* =====================================================================
+       6. ДОБАВЛЕНИЕ (POST /api/admin/users)
+       ===================================================================== */
+
+    // ЧТО: рисует чекбоксы ролей в форме добавления (один раз при загрузке страницы).
+    async function loadAddRoles() {
+        try {
+            const allRoles = await loadAllRoles();
+            renderRoleCheckboxes(document.getElementById("addRoles"), allRoles, "addRole");
+        } catch (error) {
+            console.error('Ошибка при загрузке ролей:', error);
+        }
+    }
+
+    // ЧТО: обработчик отправки формы добавления.
+    // КАК: event.preventDefault() отменяет стандартную отправку формы (иначе браузер перейдёт
+    //      на другой адрес и страница перезагрузится). Дальше то же, что в saveEditedUser,
+    //      но метод POST и без id. После успеха: очищаем форму, обновляем таблицу, открываем вкладку со списком.
+    async function addUser(event) {
+        event.preventDefault();
+        const form = event.target;
+        const user = {
+            firstName: form.firstName.value,
+            lastName: form.lastName.value,
+            age: form.age.value,
+            login: form.login.value,
+            password: form.password.value,
+            roleSet: getCheckedRoles("addRole")
+        };
+        try {
+            const response = await fetch('/api/admin/users', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    [csrfHeader]: csrfToken
+                },
+                body: JSON.stringify(user)
+            });
+            if (response.ok) {
+                form.reset();
+                await loadUsers();
+                bootstrap.Tab.getOrCreateInstance(
+                    document.querySelector('[data-bs-target="#users-table"]')
+                ).show();
+            } else {
+                console.error('Ошибка при добавлении: статус', response.status);
+            }
+        } catch (error) {
+            console.error('Ошибка сети:', error);
+        }
+    }
+
+    /* =====================================================================
+       7. ПАНЕЛЬ USER (GET /api/user) И ПЕРЕКЛЮЧЕНИЕ ПАНЕЛЕЙ
+       ===================================================================== */
+
+    // ЧТО: загружает данные текущего вошедшего пользователя и рисует их в панели User.
+    // ЗАЧЕМ: клиент не знает, кто он, - это знает сервер (по сессии). Логин мы не отправляем,
+    //        поэтому подделать запрос и получить чужие данные нельзя.
+    async function loadCurrentUser() {
+        try {
+            const response = await fetch('/api/user');
+            if (!response.ok) {
+                throw new Error('Не удалось загрузить текущего пользователя, статус: ' + response.status);
+            }
+            const user = await response.json();
+            document.getElementById("currentUserBody").innerHTML = `
+                <tr>
+                    <td>${user.id}</td>
+                    <td>${escapeHtml(user.firstName ?? 'пусто')}</td>
+                    <td>${escapeHtml(user.lastName ?? 'пусто')}</td>
+                    <td>${user.age}</td>
+                    <td>${escapeHtml(user.login)}</td>
+                    <td>${escapeHtml(getRolesText(user))}</td>
+                </tr>`;
+        } catch (error) {
+            console.error('Ошибка при загрузке текущего пользователя:', error);
+        }
+    }
+
+    // ЧТО: показывает одну панель и прячет другую, подсвечивает нужный пункт бокового меню.
+    // КАК: classList.toggle("d-none", условие) - если условие true, класс d-none (скрыть) добавляется,
+    //      если false - убирается. "active" работает наоборот: у выбранного пункта он включён.
+    function showPanel(panelName) {
+        const isAdmin = panelName === 'admin';
+        document.getElementById("adminPanel").classList.toggle("d-none", !isAdmin);
+        document.getElementById("userPanel").classList.toggle("d-none", isAdmin);
+        document.getElementById("adminLink").classList.toggle("active", isAdmin);
+        document.getElementById("userLink").classList.toggle("active", !isAdmin);
+    }
+
+    /* =====================================================================
+       8. ПОДПИСКА НА СОБЫТИЯ (выполняется один раз при загрузке страницы)
+       ===================================================================== */
+
+    document.getElementById("confirmDeleteBtn").addEventListener("click", confirmDelete);
+    document.getElementById("saveEditBtn").addEventListener("click", saveEditedUser);
+    document.getElementById("addUserForm").addEventListener("submit", addUser);
+
+    document.getElementById("adminLink").addEventListener("click", (event) => {
+        event.preventDefault(); // не даём ссылке href="#" прокрутить страницу вверх
+        showPanel('admin');
+    });
+    document.getElementById("userLink").addEventListener("click", (event) => {
+        event.preventDefault();
+        showPanel('user');
+    });
+
+    // Перед закрытием модалки снимаем фокус с кнопки внутри неё.
+    // Иначе браузер пишет предупреждение aria-hidden: модалка уже скрыта, а фокус остался на кнопке.
+    [deleteModalElement, editModalElement].forEach(modalElement => {
+        modalElement.addEventListener('hide.bs.modal', () => document.activeElement.blur());
+    });
+
+    /* =====================================================================
+       9. ПЕРВОНАЧАЛЬНАЯ ЗАГРУЗКА ДАННЫХ
+       ===================================================================== */
+
+    loadUsers();
+    loadAddRoles();
+    loadCurrentUser();
+</script>
 </body>
 </html>

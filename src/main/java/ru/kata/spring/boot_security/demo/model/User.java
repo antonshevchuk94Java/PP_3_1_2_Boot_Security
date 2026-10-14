@@ -1,5 +1,6 @@
 package ru.kata.spring.boot_security.demo.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
@@ -24,6 +25,8 @@ public class User implements UserDetails {
     private byte age;
     @Column(name = "userLogin", unique = true)
     private String login;
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+    // аннотация задает параметор для поля , write_only только принимает поля но не отдает
     @Column(name = "userPassword")
     private String password;
     @ManyToMany(fetch = FetchType.LAZY)

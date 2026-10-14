@@ -1,5 +1,6 @@
 package ru.kata.spring.boot_security.demo.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.springframework.security.core.GrantedAuthority;
 
 import javax.persistence.*;
@@ -18,6 +19,8 @@ public class Role implements GrantedAuthority {
     @Column
     private String role;
     @ManyToMany(mappedBy = "roleSet")
+    @JsonIgnore /* при обращении к полю Jackson будет просить значения у User (roleSet)
+     тот в свою очередь у Role (userSet) аннотация разрывает рекурсию.*/
     private Set<User> userSet = new HashSet<>();
 
     public Role() {
